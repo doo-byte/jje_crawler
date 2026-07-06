@@ -12,7 +12,9 @@ import re
 import sys
 import time
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+KST = timezone(timedelta(hours=9))
 from html import unescape
 from pathlib import Path
 
@@ -189,7 +191,7 @@ def main():
 
     data = sorted(items.values(), key=lambda x: x["applyPeriod"])
     out = Path(__file__).parent / "data.js"
-    payload = ("const CRAWLED_AT = " + json.dumps(datetime.now().strftime("%Y-%m-%d %H:%M")) +
+    payload = ("const CRAWLED_AT = " + json.dumps(datetime.now(KST).strftime("%Y-%m-%d %H:%M")) +
                ";\nconst EDU_DATA = " + json.dumps(data, ensure_ascii=False, indent=1) + ";\n")
     out.write_text(payload, encoding="utf-8")
     print(f"완료: {out} ({len(data)}건). index.html 을 브라우저로 여세요.")
