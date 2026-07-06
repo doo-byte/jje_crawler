@@ -183,14 +183,25 @@ def infer_fit(item):
 
     # 둘째(6세, 유아)
     if "유아" in targets or "가족" in targets:
+        decided = None
+        # 1) 명시된 나이가 최우선: "5~7세", "5세 이상", "6세"
         ages = re.findall(r"(\d{1,2})\s*[~∼-]\s*(\d{1,2})\s*세", detail)
+        over = re.findall(r"(\d{1,2})\s*세\s*이상", detail)
         singles = re.findall(r"(\d{1,2})\s*세", detail)
         if ages:
-            fit["child6"] = any(int(a) <= 6 <= int(b) for a, b in ages)
+            decided = any(int(a) <= 6 <= int(b) for a, b in ages)
+        elif over:
+            decided = any(int(s) <= 6 for s in over)
         elif singles:
-            fit["child6"] = any(int(s) == 6 for s in singles)
-        else:
-            fit["child6"] = True  # 나이 명시 없으면 유아 대상으로 간주
+            decided = any(int(s) == 6 for s in singles)
+        # 2) 유아 관련 표현이 있으면 포함
+        if decided is None and re.search(r"유아|유치원|누리과정|미취학", detail):
+            decided = True
+        # 3) 학년 표기만 있으면 학교(초1=8세) 대상이므로 6세 제외
+        if decided is None and re.search(r"\d\s*학년|초등|중학|고등", detail):
+            decided = False
+        # 4) 아무 정보도 없으면 유아/가족 대상으로 간주
+        fit["child6"] = decided if decided is not None else True
 
     # 첫째(초6, 학생)
     if "학생" in targets or "가족" in targets:
