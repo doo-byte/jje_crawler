@@ -1,0 +1,6 @@
+# 크롤링 결과물 (Actions에서 매번 새로 생성)
+data.js
+
+# 로컬 도구 설정
+.claude/
+__pycache__/

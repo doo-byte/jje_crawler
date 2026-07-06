@@ -1,0 +1,46 @@
+name: 크롤링 후 GitHub Pages 배포
+
+on:
+  schedule:
+    # KST 06:00 / 12:00 / 18:00 (UTC 21:00 / 03:00 / 09:00)
+    - cron: "0 21,3,9 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 크롤링 실행 (data.js 생성)
+        run: python crawl.py
+
+      - name: 배포 파일 구성
+        run: |
+          mkdir -p _site
+          cp index.html data.js _site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
