@@ -112,8 +112,8 @@
   ※ 거리는 안덕면 기준 직선거리 대략값입니다. 위치를 알 수 없는 강좌는 거리 필터 적용 시 제외됩니다.
 </footer>
 
-<script src="data.js"></script>
 <script>
+function boot(){
 const now = new Date();
 // 기준 위치: 안덕면 일대 (사생활 보호를 위해 정확한 집 주소 대신 반올림한 좌표 사용)
 const HOME = {lat: 33.28, lng: 126.31};
@@ -226,6 +226,16 @@ document.querySelectorAll(".fgroup").forEach(g=>{
 document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value;render();});
 
 render();
+} // boot()
+
+// data.js를 캐시 무시하고 매번 최신으로 로드 (브라우저가 옛 데이터를 보여주는 문제 방지)
+const s = document.createElement("script");
+s.src = "data.js?t=" + Date.now();
+s.onload = boot;
+s.onerror = () => {
+  document.getElementById("crawledAt").textContent = "data.js 없음 — crawl.py를 먼저 실행하세요";
+};
+document.head.appendChild(s);
 </script>
 </body>
 </html>
